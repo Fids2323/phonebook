@@ -86,6 +86,7 @@ const data = [
 			<th>Имя</th>
 			<th>Фамилия</th>
 			<th>Телефон</th>
+			<th></th>
 		</tr>
 		`);
 
@@ -186,6 +187,7 @@ const data = [
       logo,
       btnAdd: buttonGroup.btns[0],
       formOverlay: form.overlay,
+      form: form.form,
     };
   };
 
@@ -206,7 +208,14 @@ const data = [
     phoneLink.textContent = phone;
     tr.phoneLink = phoneLink;
     tdPhone.append(phoneLink);
-    tr.append(tdDel, tdName, tdSurname, tdPhone);
+    const tdEdit = document.createElement('td');
+    const btnEdit = document.createElement('button');
+    btnEdit.className = ('btn btn-primary');
+    btnEdit.textContent = 'Редактировать';
+    tdEdit.append(btnEdit);
+
+
+    tr.append(tdDel, tdName, tdSurname, tdPhone, tdEdit);
     return tr;
   };
 
@@ -231,21 +240,24 @@ const data = [
   const init = (selectorApp, title) => {
     const app = document.querySelector(selectorApp);
     const phoneBook = renderPhoneBook(app, title);
-    const {list, logo, btnAdd, formOverlay} = phoneBook;
+    const {list, logo, btnAdd, formOverlay, form} = phoneBook;
 
 
-// Функционал
+    // Функционал
     const allRow = renderContacts(list, data);
 
     hoverRow(allRow, logo);
 
-    const objEvent = {
-      handleEvent() {
-        formOverlay.classList.add('is-visible');
-      },
-    };
-    btnAdd.addEventListener('click', objEvent);
-  };
+    btnAdd.addEventListener('click', () => {
+      formOverlay.classList.add('is-visible');
+    });
 
+    form.addEventListener('click', e => {
+      e.stopPropagation();
+    });
+    formOverlay.addEventListener('click', () => {
+      formOverlay.classList.remove('is-visible');
+    });
+  };
   window.phoneBookInit = init;
 }
