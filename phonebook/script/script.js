@@ -1,32 +1,35 @@
+
 'use strict';
-const data = [
-  {
-    name: 'Иван',
-    surname: 'Петров',
-    phone: '+79514545454',
-  },
-  {
-    name: 'Игорь',
-    surname: 'Семёнов',
-    phone: '+79999999999',
-  },
-  {
-    name: 'Семён',
-    surname: 'Иванов',
-    phone: '+79800252525',
-  },
-  {
-    name: 'Мария',
-    surname: 'Попова',
-    phone: '+79876543210',
-  },
-];
 
 {
-  const addContactData = contact => {
-    data.push(contact);
-    console.log(data);
+  const getStorage = (key) => {
+    const data = localStorage.getItem(key);
+    if (data) {
+      return JSON.parse(data);
+    } else {
+      return [];
+    }
   };
+
+
+  const setStorage = (key, obj) => {
+    const data = getStorage(key);
+    const isSome = data.some((item) => item.phone === obj.phone);
+    !isSome && data.push(obj);
+    localStorage.setItem(key, JSON.stringify(data));
+  };
+
+  const removeStorage = (phone) => {
+    const data = getStorage('data');
+    for (let i = 0; i < data.length; i++) {
+      if (data[i].phone === phone) {
+        data.splice(i, 1);
+        break;
+      }
+    }
+    localStorage.setItem('data', JSON.stringify(data));
+  };
+
   const createContainer = () => {
     const container = document.createElement('div');
     container.classList.add('container');
@@ -82,7 +85,6 @@ const data = [
   const createTable = () => {
     const table = document.createElement('table');
     table.classList.add('table', 'table-striped');
-
     const thead = document.createElement('thead');
     thead.insertAdjacentHTML('beforeend', `
 		<tr>
@@ -104,7 +106,6 @@ const data = [
   const createForm = () => {
     const overlay = document.createElement('div');
     overlay.classList.add('form-overlay');
-
     const form = document.createElement('form');
     form.classList.add('form');
     form.insertAdjacentHTML('beforeend', `
@@ -245,6 +246,8 @@ const data = [
 
   const modalControl = (btnAdd, formOverlay) => {
     const openModal = () => {
+      const allBtnsDel = document.querySelectorAll('.delete');
+      allBtnsDel.forEach((item) => item.classList.remove('is-visible'));
       formOverlay.classList.add('is-visible');
     };
     const closeModal = () => {
@@ -272,7 +275,10 @@ const data = [
     });
     list.addEventListener('click', e => {
       if (e.target.closest('.del-icon')) {
+        const contact = e.target.closest('.contact');
+        const phone = contact.querySelectorAll('td')[3].textContent;
         e.target.closest('.contact').remove();
+        removeStorage(phone);
       }
     });
   };
@@ -286,12 +292,20 @@ const data = [
       e.preventDefault();
       const formData = new FormData(e.target);
       const newContact = Object.fromEntries(formData);
+      setStorage('data', newContact);
       addContactPage(newContact, list);
-      addContactData(newContact);
       form.reset();
       closeModal();
     });
   };
+
+  const sortData = (data, sortField, sortOrder) => data.sort((a, b) => {
+    if (sortOrder === 'asc') {
+      return a[sortField] > b[sortField] ? 1 : -1;
+    } else {
+      return a[sortField] < b[sortField] ? 1 : -1;
+    }
+  });
 
   const init = (selectorApp, title) => {
     const app = document.querySelector(selectorApp);
@@ -303,31 +317,44 @@ const data = [
       form,
       btnDel} = renderPhoneBook(app, title);
 
-
     // Функционал
-    const allRow = renderContacts(list, data);
+    let allRow = renderContacts(list, getStorage('data'));
     const {closeModal} = modalControl(btnAdd, formOverlay);
-
     hoverRow(allRow, logo);
     deleteControl(btnDel, list);
     formControl(form, list, closeModal);
 
-
     const thead = document.querySelector('thead');
     const tbody = document.querySelector('tbody');
+    const savedSortField = localStorage.getItem('sortField');
+    const savedSortOrder = localStorage.getItem('sortOrder');
+    if (savedSortField) {
+      const sortedData = sortData(getStorage('data'), savedSortField, savedSortOrder);
+      tbody.textContent = '';
+      allRow = renderContacts(list, sortedData);
+    }
+
     thead.addEventListener('click', e => {
       const target = e.target;
+      let sortField = '';
+      let sortOrder = 'asc';
       if (target.textContent === 'Имя') {
-        tbody.textContent = '';
-        const sortArr = data.sort((a, b) => (a.name > b.name ? 1 : -1));
-        allRow = renderContacts(list, sortArr);
+        sortField = 'name';
+      } else if (target.textContent === 'Фамилия') {
+        sortField = 'surname';
       }
-      if (target.textContent === 'Фамилия') {
-        tbody.textContent = '';
-        const sortArr = data.sort((a, b) => (a.surname > b.surname ? 1 : -1));
-        allRow = renderContacts(list, sortArr);
+      if (localStorage.getItem('sortField') === sortField) {
+        sortOrder = localStorage.getItem('sortOrder') === 'asc' ? 'desc' : 'asc';
       }
+      localStorage.setItem('sortField', sortField);
+      localStorage.setItem('sortOrder', sortOrder);
+      tbody.textContent = '';
+      const sortedData = sortData(getStorage('data'), sortField, sortOrder);
+      renderContacts(list, sortedData);
     });
   };
   window.phoneBookInit = init;
 }
+
+
+//
