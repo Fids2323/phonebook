@@ -2,32 +2,18 @@
 'use strict';
 
 {
-  const getStorage = (key) => {
-    const data = localStorage.getItem(key);
-    if (data) {
-      return JSON.parse(data);
-    } else {
-      return [];
-    }
-  };
-
+  const getStorage = key => JSON.parse(localStorage.getItem(key)) || [];
 
   const setStorage = (key, obj) => {
     const data = getStorage(key);
-    const isSome = data.some((item) => item.phone === obj.phone);
-    !isSome && data.push(obj);
+    data.push(obj);
     localStorage.setItem(key, JSON.stringify(data));
   };
 
-  const removeStorage = (phone) => {
-    const data = getStorage('data');
-    for (let i = 0; i < data.length; i++) {
-      if (data[i].phone === phone) {
-        data.splice(i, 1);
-        break;
-      }
-    }
-    localStorage.setItem('data', JSON.stringify(data));
+  const removeStorage = (key, phone) => {
+    let data = getStorage(key);
+    data = data.filter(item => item.phone !== phone);
+    localStorage.setItem(key, JSON.stringify(data));
   };
 
   const createContainer = () => {
@@ -278,7 +264,7 @@
         const contact = e.target.closest('.contact');
         const phone = contact.querySelectorAll('td')[3].textContent;
         e.target.closest('.contact').remove();
-        removeStorage(phone);
+        removeStorage('data', phone);
       }
     });
   };
