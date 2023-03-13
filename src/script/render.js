@@ -1,4 +1,4 @@
-import * as create from './createElements.js';
+import * as create from "./createElements.js";
 
 const renderPhoneBook = (app, title) => {
   const header = create.createHeader();
@@ -7,19 +7,19 @@ const renderPhoneBook = (app, title) => {
   const footer = create.createFooter(title);
   const buttonGroup = create.createButtonsGroup([
     {
-      className: 'btn btn-primary mr-3',
-      type: 'button',
-      text: 'Добавить',
+      className: "btn btn-primary mr-3",
+      type: "button",
+      text: "Добавить",
     },
     {
-      className: 'btn btn-danger',
-      type: 'button',
-      text: 'Удалить',
+      className: "btn btn-danger",
+      type: "button",
+      text: "Удалить",
     },
   ]);
 
   const table = create.createTable();
-  const {form, overlay} = create.createForm();
+  const { form, overlay } = create.createForm();
 
   header.headerContainer.append(logo);
   main.mainContainer.append(buttonGroup.btnWrapper, table, overlay);
@@ -41,7 +41,4 @@ const renderContacts = (elem, data) => {
   return allRow;
 };
 
-export {
-  renderPhoneBook,
-  renderContacts,
-};
+export { renderPhoneBook, renderContacts };
